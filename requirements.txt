@@ -4,3 +4,4 @@ jinja2
 pydantic
 python-dotenv
 google-generativeai
+python-multipart
