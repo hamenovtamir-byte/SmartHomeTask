@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель управления - Smart HomeTask</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .dashboard-container { max-width: 900px; margin: 40px auto; padding: 20px; }
+        .card { border: none; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
+    </style>
+</head>
+<body>
+
+<div class="container dashboard-container">
+    <!-- Шапка с кнопкой выхода -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Панель управления</h2>
+        <a href="/logout" class="btn btn-outline-danger btn-sm">🚪 Выйти из системы</a>
+    </div>
+
+    <!-- Блок генерации теста через ИИ -->
+    <div class="card">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="mb-0">⚙️ Генерация теста с помощью ИИ</h5>
+        </div>
+        <div class="card-body p-4">
+            <form method="POST" action="/teacher/generate_task_ai">
+                <div class="mb-3">
+                    <label for="subject" class="form-label">Предмет</label>
+                    <input type="text" class="form-control" id="subject" name="subject" placeholder="Например: Физика" required>
+                </div>
+                <div class="mb-3">
+                    <label for="topic" class="form-label">Тема теста</label>
+                    <input type="text" class="form-control" id="topic" name="topic" placeholder="Например: Кинематика материальной точки" required>
+                </div>
+                <div class="mb-3">
+                    <label for="time_limit" class="form-label">Время на выполнение (минуты)</label>
+                    <input type="number" class="form-control" id="time_limit" name="time_limit" value="15" min="1" required>
+                </div>
+                <button type="submit" class="btn btn-success">Сгенерировать тест</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Блок регистрации пользователей -->
+    <div class="card">
+        <div class="card-header bg-dark text-white py-3">
+            <h5 class="mb-0">👥 Регистрация нового пользователя</h5>
+        </div>
+        <div class="card-body p-4">
+            <form method="POST" action="/register">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Имя пользователя (Логин)</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Пароль</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <div class="mb-3">
+                    <label for="role" class="form-label">Роль в системе</label>
+                    <select class="form-select" id="role" name="role" required>
+                        <option value="student">Ученик</option>
+                        <option value="teacher">Учитель</option>
+                        <option value="admin">Администратор</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-dark">Зарегистрировать</button>
+            </form>
+
+            <hr class="my-4">
+            <h6 class="text-muted mb-3">Список зарегистрированных пользователей:</h6>
+            <ul class="list-group">
+                {% for u in users %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ u.username }}</span>
+                        <span class="badge bg-secondary rounded-pill">{{ u.role }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Список созданных тестов -->
+    <div class="card">
+        <div class="card-header bg-secondary text-white py-3">
+            <h5 class="mb-0">📚 Созданные тесты</h5>
+        </div>
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Предмет</th>
+                            <th>Тема</th>
+                            <th>Время (мин)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in tasks %}
+                            <tr>
+                                <td>{{ t.id }}</td>
+                                <td>{{ t.subject }}</td>
+                                <td>{{ t.topic }}</td>
+                                <td>{{ t.time_limit }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

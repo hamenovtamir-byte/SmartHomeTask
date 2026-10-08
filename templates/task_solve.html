@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Прохождение теста - Smart HomeTask</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .test-container { max-width: 800px; margin: 40px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .timer { font-size: 1.25rem; font-weight: bold; color: #dc3545; }
+        
+        /* Стили для защиты от выделения текста и копирования */
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+    </style>
+</head>
+<body class="no-select" oncopy="return false;" oncut="return false;" onpaste="return false;" oncontextmenu="return false;">
+
+<div class="container">
+    <div class="test-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Тема: {{ task.topic }}</h2>
+            <div id="timer" class="timer">Осталось времени: <span id="time">--:--</span></div>
+        </div>
+
+        <div id="warning-box" class="alert alert-warning d-none" role="alert">
+            ⚠️ <strong>Внимание!</strong> Зафиксировано переключение вкладки или сворачивание браузера. Нарушений: <span id="switch-count">0</span>
+        </div>
+
+        <form id="test-form" method="POST" action="/student/submit_task">
+            <input type="hidden" name="task_id" value="{{ task.id }}">
+            <input type="hidden" id="tab_switches" name="tab_switches" value="0">
+
+            {% for q in questions %}
+                <div class="card mb-4 border-light shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary mb-3">Вопрос {{ loop.index }}: {{ q.question }}</h5>
+                        
+                        {% for opt in q.options %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" 
+                                       name="q_{{ loop.index0 }}" 
+                                       id="q_{{ loop.index0 }}_{{ loop.index }}" 
+                                       value="{{ opt[0] }}"
+                                       onclick="toggleRadio(this)">
+                                <label class="form-check-label" for="q_{{ loop.index0 }}_{{ loop.index }}">
+                                    {{ opt }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-success btn-lg">Сдать тест</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Отмена выбора при повторном клике по радиокнопке
+    const previousSelections = {};
+
+    function toggleRadio(element) {
+        const name = element.name;
+        
+        if (previousSelections[name] === element) {
+            element.checked = false;
+            previousSelections[name] = undefined;
+        } else {
+            previousSelections[name] = element;
+        }
+    }
+
+    // Дополнительная защита JS от комбинаций клавиш копирования (Ctrl+C, Ctrl+A и т.д.)
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'a' || e.key === 'A' || e.key === 'u' || e.key === 'U' || e.key === 'p' || e.key === 'P')) {
+            e.preventDefault();
+            alert("Копирование и использование горячих клавиш на тесте запрещено!");
+        }
+    });
+
+    // Таймер обратного отсчета
+    let timeLimitMinutes = {{ task.time_limit }};
+    let totalSeconds = timeLimitMinutes * 60;
+    const timerDisplay = document.getElementById("time");
+
+    const timerInterval = setInterval(() => {
+        let minutes = Math.floor(totalSeconds / 60);
+        let seconds = totalSeconds % 60;
+
+        timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+        if (totalSeconds <= 0) {
+            clearInterval(timerInterval);
+            alert("Время вышло! Тест будет отправлен автоматически.");
+            document.getElementById("test-form").submit();
+        }
+        totalSeconds--;
+    }, 1000);
+
+    // Античит: отслеживание переключения вкладок
+    let tabSwitches = 0;
+    const warningBox = document.getElementById("warning-box");
+    const switchCountDisplay = document.getElementById("switch-count");
+    const tabSwitchesInput = document.getElementById("tab_switches");
+
+    document.addEventListener("visibilitychange", function() {
+        if (document.hidden) {
+            tabSwitches++;
+            tabSwitchesInput.value = tabSwitches;
+            switchCountDisplay.textContent = tabSwitches;
+            warningBox.classList.remove("d-none");
+        }
+    });
+</script>
+
+</body>
+</html>
