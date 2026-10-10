@@ -28,17 +28,21 @@ def generate_ai_content(prompt: str):
         print("❌ Ошибка: Переменная GEMINI_API_KEY не задана!")
         return None
         
-    try:
-        print(f"🔄 Отправка запроса в Gemini API...")
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content(prompt)
-        if response and response.text:
-            print("✅ Ответ от ИИ успешно получен!")
-            return response.text
-    except Exception as e:
-        print(f"⚠️ Подробная ошибка Gemini API: {e}")
-        
+    models_to_test = ["gemini-pro", "gemini-1.5-pro", "gemini-1.5-flash"]
+    
+    for model_name in models_to_test:
+        try:
+            print(f"🔄 Пробуем модель: {model_name}...")
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel(model_name)
+            response = model.generate_content(prompt)
+            if response and response.text:
+                print(f"✅ Успешно получено от модели {model_name}!")
+                return response.text
+        except Exception as e:
+            print(f"⚠️ Ошибка с моделью {model_name}: {e}")
+            continue
+            
     return None
 
 @app.get("/", response_class=HTMLResponse)
