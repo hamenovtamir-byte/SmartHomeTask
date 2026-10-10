@@ -203,7 +203,12 @@ async def student_panel(request: Request, user_id: str = Cookie(None), user_role
     conn = database.get_db()
     cursor = conn.cursor()
     
-    cursor.execute("SELECT * FROM tasks ORDER BY id DESC")
+    # Исключаем тесты, которые этот ученик уже сдал
+    cursor.execute("""
+        SELECT * FROM tasks 
+        WHERE id NOT IN (SELECT task_id FROM results WHERE user_id = ?) 
+        ORDER BY id DESC
+    """, (user_id,))
     tasks = cursor.fetchall()
     
     cursor.execute("""
