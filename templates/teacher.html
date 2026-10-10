@@ -7,56 +7,57 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div class="container">
-        <header class="teacher-header">
-            <h2>Панель преподавателя</h2>
-            <a href="/logout" class="btn-logout">Выйти</a>
+    <div class="container" style="max-width: 900px; margin: 40px auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+        
+        <header class="teacher-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 25px;">
+            <h2 style="margin: 0; color: #333;">Панель преподавателя</h2>
+            <a href="/logout" class="btn-logout" style="background-color: #ff4d4d; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; transition: background 0.2s;">Выйти</a>
         </header>
 
         <!-- Генерация теста с помощью ИИ -->
-        <section class="generator-card">
-            <h3>🤖 Генерация теста с помощью ИИ</h3>
+        <section class="generator-card" style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e9ecef;">
+            <h3 style="margin-top: 0; color: #2c3e50; margin-bottom: 15px;">🤖 Генерация теста с помощью ИИ</h3>
             <form action="/teacher/generate_task_ai" method="POST">
-                <div class="form-group">
-                    <label>Предмет:</label>
-                    <input type="text" name="subject" required placeholder="Например: Математика">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">Предмет:</label>
+                    <input type="text" name="subject" required placeholder="Например: Физика" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;">
                 </div>
-                <div class="form-group">
-                    <label>Тема:</label>
-                    <input type="text" name="topic" required placeholder="Например: Квадратные уравнения">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">Тема:</label>
+                    <input type="text" name="topic" required placeholder="Например: Законы Ньютона" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;">
                 </div>
-                <div class="form-group">
-                    <label>Лимит времени (минуты):</label>
-                    <input type="number" name="time_limit" value="15" required>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">Лимит времени (минуты):</label>
+                    <input type="number" name="time_limit" value="15" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;">
                 </div>
-                <button type="submit" class="btn-submit">Сгенерировать тест</button>
+                <button type="submit" class="btn-submit" style="background: #4f46e5; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">Сгенерировать тест</button>
             </form>
         </section>
 
         <!-- Результаты учеников -->
-        <section class="results-card" style="margin-top: 25px;">
-            <h3>📊 Результаты учеников</h3>
-            <div class="table-responsive" style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+        <section class="results-card" style="margin-bottom: 25px;">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">📊 Результаты учеников</h3>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; background: white; border: 1px solid #e9ecef; border-radius: 8px; overflow: hidden;">
                     <thead>
-                        <tr style="border-bottom: 2px solid #ddd; text-align: left;">
-                            <th style="padding: 10px;">Ученик</th>
-                            <th style="padding: 10px;">Тема теста</th>
-                            <th style="padding: 10px;">Балл (%)</th>
-                            <th style="padding: 10px;">Переключений вкладок</th>
+                        <tr style="background-color: #f1f5f9; text-align: left; color: #334155;">
+                            <th style="padding: 12px; border-bottom: 1px solid #e2e8f0;">Ученик</th>
+                            <th style="padding: 12px; border-bottom: 1px solid #e2e8f0;">Тема теста</th>
+                            <th style="padding: 12px; border-bottom: 1px solid #e2e8f0;">Балл (%)</th>
+                            <th style="padding: 12px; border-bottom: 1px solid #e2e8f0;">Переключений вкладок</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for r in results %}
-                            <tr style="border-bottom: 1px solid #eee;">
-                                <td style="padding: 10px;">{{ r.username }}</td>
-                                <td style="padding: 10px;">{{ r.topic }}</td>
-                                <td style="padding: 10px;"><strong>{{ r.score }}%</strong></td>
-                                <td style="padding: 10px; color: {% if r.tab_switches > 0 %}red{% else %}green{% endif %};">{{ r.tab_switches }}</td>
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 12px; color: #333;">{{ r.username }}</td>
+                                <td style="padding: 12px; color: #333;">{{ r.topic }}</td>
+                                <td style="padding: 12px; font-weight: bold; color: #2563eb;">{{ r.score }}%</td>
+                                <td style="padding: 12px; font-weight: bold; color: {% if r.tab_switches > 0 %}#dc2626{% else %}#16a34a{% endif %};">{{ r.tab_switches }}</td>
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="4" style="padding: 15px; text-align: center; color: #777;">Пока нет сданных результатов.</td>
+                                <td colspan="4" style="padding: 20px; text-align: center; color: #888;">Пока нет сданных результатов.</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -64,40 +65,43 @@
             </div>
         </section>
 
-        <!-- Регистрация пользователей (возвращена на место!) -->
-        <section class="register-card" style="margin-top: 25px;">
-            <h3>Регистрация нового пользователя</h3>
+        <!-- Регистрация нового пользователя -->
+        <section class="register-card" style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e9ecef;">
+            <h3 style="margin-top: 0; color: #2c3e50; margin-bottom: 15px;">👤 Регистрация нового пользователя</h3>
             <form action="/register" method="POST">
-                <div class="form-group">
-                    <label>Имя пользователя:</label>
-                    <input type="text" name="username" required>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">Имя пользователя:</label>
+                    <input type="text" name="username" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;">
                 </div>
-                <div class="form-group">
-                    <label>Пароль:</label>
-                    <input type="password" name="password" required>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">Пароль:</label>
+                    <input type="password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;">
                 </div>
-                <div class="form-group">
-                    <label>Роль:</label>
-                    <select name="role" style="width: 100%; padding: 8px; margin-top: 5px;">
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">Роль:</label>
+                    <select name="role" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; background: white;">
                         <option value="student">Ученик</option>
                         <option value="teacher">Преподаватель</option>
                     </select>
                 </div>
-                <button type="submit" class="btn-submit" style="margin-top: 10px;">Зарегистрировать</button>
+                <button type="submit" class="btn-submit" style="background: #4f46e5; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">Зарегистрировать</button>
             </form>
         </section>
 
         <!-- Список созданных тестов -->
-        <section class="tasks-list" style="margin-top: 25px;">
-            <h3>Список тестов</h3>
-            <ul>
+        <section class="tasks-list">
+            <h3 style="color: #2c3e50; margin-bottom: 10px;">📋 Список тестов</h3>
+            <ul style="list-style-type: none; padding: 0;">
                 {% for task in tasks %}
-                    <li><strong>{{ task.subject }}</strong>: {{ task.topic }} ({{ task.time_limit }} мин.)</li>
+                    <li style="background: #fdfdfd; border: 1px solid #e2e8f0; padding: 10px 15px; border-radius: 6px; margin-bottom: 8px;">
+                        <strong>{{ task.subject }}</strong>: {{ task.topic }} <span style="color: #666; font-size: 13px;">({{ task.time_limit }} мин.)</span>
+                    </li>
                 {% else %}
-                    <p>Тестов пока нет.</p>
+                    <p style="color: #888;">Тестов пока нет.</p>
                 {% endfor %}
             </ul>
         </section>
+
     </div>
 </body>
 </html>
