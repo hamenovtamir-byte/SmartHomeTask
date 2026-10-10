@@ -14,10 +14,9 @@ def init_db():
         )
     """)
     
-    # Пересоздаем таблицу tasks, чтобы применить актуальную структуру без блокировок
-    cursor.execute("DROP TABLE IF EXISTS tasks")
+    # Таблица заданий
     cursor.execute("""
-        CREATE TABLE tasks (
+        CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             topic TEXT NOT NULL,
             subject TEXT DEFAULT 'Общий',
@@ -26,6 +25,18 @@ def init_db():
             question TEXT DEFAULT '',
             reference_answer TEXT DEFAULT '',
             rubric TEXT DEFAULT ''
+        )
+    """)
+
+    # Таблица вопросов для тестов
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS questions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id INTEGER,
+            question_text TEXT NOT NULL,
+            options TEXT NOT NULL,
+            correct_answer TEXT NOT NULL,
+            FOREIGN KEY (task_id) REFERENCES tasks (id)
         )
     """)
     
