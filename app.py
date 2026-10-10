@@ -65,7 +65,6 @@ async def login(request: Request, username: str = Form(...), password: str = For
             status_code=400
         )
 
-    # Администраторы и учителя перенаправляются в панель управления
     redirect_url = "/teacher" if user["role"] in ["admin", "teacher"] else "/student"
     resp = RedirectResponse(url=redirect_url, status_code=status.HTTP_303_SEE_OTHER)
     resp.set_cookie(key="user_id", value=str(user["id"]))
@@ -121,12 +120,12 @@ async def generate_task_ai(subject: str = Form(...), topic: str = Form(...), tim
 
     prompt = f"""
     Создай тест по предмету '{subject}' на тему '{topic}'.
-    Тест должен содержать ровно 3 вопроса.
+    Тест должен содержать ровно 10 вопросов.
     Формат строго JSON-объект без лишнего текста, без обрамления ```json:
     {{
       "questions": [
         {{
-          "question": "Текст вопроса 1?",
+          "question": "Текст вопроса?",
           "options": ["Вариант А", "Вариант Б", "Вариант В", "Вариант Г"],
           "answer": "Вариант А"
         }}
@@ -145,19 +144,14 @@ async def generate_task_ai(subject: str = Form(...), topic: str = Form(...), tim
         except Exception as e:
             print(f"Ошибка парсинга JSON от ИИ: {e}")
 
-    # Резервные вопросы, если лимиты API исчерпаны или ИИ не ответил
-    if not questions_data:
+    # Резервные вопросы (ровно 10 штук), если лимиты API исчерпаны
+    if not questions_data or len(questions_data) < 10:
         questions_data = [
             {
-                "question": f"Основной вопрос по теме '{topic}' ({subject})?",
+                "question": f"Вопрос {i+1} по теме '{topic}' ({subject})?",
                 "options": ["Правильный ответ", "Вариант 2", "Вариант 3", "Вариант 4"],
                 "answer": "Правильный ответ"
-            },
-            {
-                "question": f"Второй базовый вопрос по теме '{topic}'?",
-                "options": ["Вариант 1", "Правильный ответ", "Вариант 3", "Вариант 4"],
-                "answer": "Правильный ответ"
-            }
+            } for i in range(10)
         ]
 
     conn = database.get_db()
@@ -165,7 +159,7 @@ async def generate_task_ai(subject: str = Form(...), topic: str = Form(...), tim
     cursor.execute("INSERT INTO tasks (subject, topic, time_limit, question_type) VALUES (?, ?, ?, ?)", (subject, topic, time_limit, question_type))
     task_id = cursor.lastrowid
 
-    for q in questions_data:
+    for q in questions_data[:10]:
         options_json = json.dumps(q["options"], ensure_ascii=False)
         cursor.execute("INSERT INTO questions (task_id, question_text, options, correct_answer) VALUES (?, ?, ?, ?)",
                        (task_id, q["question"], options_json, q["answer"]))
