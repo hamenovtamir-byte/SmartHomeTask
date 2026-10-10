@@ -1,7 +1,12 @@
 import sqlite3
 
+def get_db():
+    conn = sqlite3.connect("database.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
 def init_db():
-    conn = sqlite3.connect("database.db", timeout=10.0)
+    conn = get_db()
     cursor = conn.cursor()
     
     # Таблица пользователей
@@ -14,21 +19,18 @@ def init_db():
         )
     """)
     
-    # Таблица заданий
+    # Таблица тестов (заданий)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            subject TEXT NOT NULL,
             topic TEXT NOT NULL,
-            subject TEXT DEFAULT 'Общий',
-            question_type TEXT NOT NULL,
             time_limit INTEGER NOT NULL,
-            question TEXT DEFAULT '',
-            reference_answer TEXT DEFAULT '',
-            rubric TEXT DEFAULT ''
+            question_type TEXT NOT NULL
         )
     """)
-
-    # Таблица вопросов для тестов
+    
+    # Таблица вопросов
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS questions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,31 +42,18 @@ def init_db():
         )
     """)
     
-    # Таблица результатов
+    # Таблица результатов прохождения тестов учениками
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS submissions (
+        CREATE TABLE IF NOT EXISTS results (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
             task_id INTEGER,
-            student_id INTEGER,
-            answer TEXT,
             score INTEGER,
-            feedback TEXT,
-            tab_switches INTEGER DEFAULT 0,
-            FOREIGN KEY (task_id) REFERENCES tasks (id),
-            FOREIGN KEY (student_id) REFERENCES users (id)
+            tab_switches INTEGER,
+            FOREIGN KEY (user_id) REFERENCES users (id),
+            FOREIGN KEY (task_id) REFERENCES tasks (id)
         )
     """)
     
-    # Создаем администратора по умолчанию, если его нет
-    cursor.execute("SELECT * FROM users WHERE username = 'admin'")
-    if not cursor.fetchone():
-        cursor.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", 
-                       ("admin", "admin123", "teacher"))
-                       
     conn.commit()
     conn.close()
-
-def get_db():
-    conn = sqlite3.connect("database.db", timeout=10.0)
-    conn.row_factory = sqlite3.Row
-    return conn
