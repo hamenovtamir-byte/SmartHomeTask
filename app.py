@@ -115,7 +115,7 @@ async def register_user(username: str = Form(...), password: str = Form(...), ro
     return RedirectResponse(url="/teacher", status_code=status.HTTP_303_SEE_OTHER)
 
 @app.post("/teacher/generate_task_ai")
-async def generate_task_ai(subject: str = Form(...), topic: str = Form(...), time_limit: int = Form(15), user_role: str = Cookie(None)):
+async def generate_task_ai(subject: str = Form(...), topic: str = Form(...), time_limit: int = Form(15), question_type: str = Form("single"), user_role: str = Cookie(None)):
     if user_role not in ["admin", "teacher"]:
         raise HTTPException(status_code=403, detail="Недостаточно прав")
 
@@ -162,7 +162,7 @@ async def generate_task_ai(subject: str = Form(...), topic: str = Form(...), tim
 
     conn = database.get_db()
     cursor = conn.cursor()
-   cursor.execute("INSERT INTO tasks (subject, topic, time_limit, question_type) VALUES (?, ?, ?, ?)", (subject, topic, time_limit, question_type))
+    cursor.execute("INSERT INTO tasks (subject, topic, time_limit, question_type) VALUES (?, ?, ?, ?)", (subject, topic, time_limit, question_type))
     task_id = cursor.lastrowid
 
     for q in questions_data:
