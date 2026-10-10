@@ -14,7 +14,7 @@ def init_db():
         )
     """)
     
-    # Таблица заданий
+    # Таблица заданий (исправлены обязательные поля под логику ИИ-генерации)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,9 +22,9 @@ def init_db():
             subject TEXT DEFAULT 'Общий',
             question_type TEXT NOT NULL,
             time_limit INTEGER NOT NULL,
-            question TEXT NOT NULL,
-            reference_answer TEXT NOT NULL,
-            rubric TEXT
+            question TEXT DEFAULT '',
+            reference_answer TEXT DEFAULT '',
+            rubric TEXT DEFAULT ''
         )
     """)
     
