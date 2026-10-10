@@ -19,6 +19,12 @@ def init_db():
         )
     """)
     
+    # Создаем администратора по умолчанию (логин: admin, пароль: admin123)
+    cursor.execute("""
+        INSERT OR IGNORE INTO users (username, password, role) 
+        VALUES ('admin', 'admin123', 'admin')
+    """)
+    
     # Таблица тестов (заданий)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS tasks (
