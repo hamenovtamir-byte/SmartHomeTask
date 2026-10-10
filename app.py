@@ -1,5 +1,6 @@
 import os
 import json
+import random
 import sqlite3
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, Cookie
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -173,13 +174,15 @@ async def generate_task_ai(subject: str = Form(...), topic: str = Form(...), tim
             print(f"Ошибка парсинга JSON от ИИ: {e}")
 
     if not questions_data or len(questions_data) < 10:
-        questions_data = [
-            {
+        questions_data = []
+        for i in range(10):
+            opts = ["Правильный ответ", "Вариант 2", "Вариант 3", "Вариант 4"]
+            random.shuffle(opts)
+            questions_data.append({
                 "question": f"Вопрос {i+1} по теме '{topic}' ({subject})?",
-                "options": ["Правильный ответ", "Вариант 2", "Вариант 3", "Вариант 4"],
+                "options": opts,
                 "answer": "Правильный ответ"
-            } for i in range(10)
-        ]
+            })
 
     conn = database.get_db()
     cursor = conn.cursor()
@@ -187,9 +190,15 @@ async def generate_task_ai(subject: str = Form(...), topic: str = Form(...), tim
     task_id = cursor.lastrowid
 
     for q in questions_data[:10]:
-        options_json = json.dumps(q["options"], ensure_ascii=False)
+        options = q["options"]
+        correct = q["answer"]
+        
+        # Рандомизируем порядок вариантов ответа
+        random.shuffle(options)
+        
+        options_json = json.dumps(options, ensure_ascii=False)
         cursor.execute("INSERT INTO questions (task_id, question_text, options, correct_answer) VALUES (?, ?, ?, ?)",
-                       (task_id, q["question"], options_json, q["answer"]))
+                       (task_id, q["question"], options_json, correct))
     conn.commit()
     conn.close()
 
@@ -203,7 +212,6 @@ async def student_panel(request: Request, user_id: str = Cookie(None), user_role
     conn = database.get_db()
     cursor = conn.cursor()
     
-    # Исключаем тесты, которые этот ученик уже сдал
     cursor.execute("""
         SELECT * FROM tasks 
         WHERE id NOT IN (SELECT task_id FROM results WHERE user_id = ?) 
