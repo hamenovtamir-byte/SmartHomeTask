@@ -1,7 +1,7 @@
 import sqlite3
 
 def init_db():
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect("database.db", timeout=10.0)
     cursor = conn.cursor()
     
     # Таблица пользователей
@@ -14,9 +14,10 @@ def init_db():
         )
     """)
     
-    # Таблица заданий
+    # Пересоздаем таблицу tasks, чтобы применить актуальную структуру без блокировок
+    cursor.execute("DROP TABLE IF EXISTS tasks")
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS tasks (
+        CREATE TABLE tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             topic TEXT NOT NULL,
             subject TEXT DEFAULT 'Общий',
