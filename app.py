@@ -196,17 +196,31 @@ async def generate_task_ai(subject: str = Form(...), topic: str = Form(...), tim
     return RedirectResponse(url="/teacher", status_code=status.HTTP_303_SEE_OTHER)
 
 @app.get("/student", response_class=HTMLResponse)
-async def student_panel(request: Request, user_role: str = Cookie(None)):
+async def student_panel(request: Request, user_id: str = Cookie(None), user_role: str = Cookie(None)):
     if user_role != "student":
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
     
     conn = database.get_db()
     cursor = conn.cursor()
+    
     cursor.execute("SELECT * FROM tasks ORDER BY id DESC")
     tasks = cursor.fetchall()
+    
+    cursor.execute("""
+        SELECT results.score, results.tab_switches, tasks.subject, tasks.topic 
+        FROM results 
+        JOIN tasks ON results.task_id = tasks.id 
+        WHERE results.user_id = ? 
+        ORDER BY results.id DESC
+    """, (user_id,))
+    my_results = cursor.fetchall()
+    
     conn.close()
 
-    return templates.TemplateResponse(request=request, name="student.html", context={"tasks": tasks})
+    return templates.TemplateResponse(request=request, name="student.html", context={
+        "tasks": tasks, 
+        "results": my_results
+    })
 
 @app.get("/student/solve/{task_id}", response_class=HTMLResponse)
 async def solve_task_page(request: Request, task_id: int, user_role: str = Cookie(None)):
