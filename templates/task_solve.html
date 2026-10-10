@@ -13,7 +13,7 @@
             <div class="timer">Осталось времени: <span id="timer-display">{{ task.time_limit }}:00</span></div>
         </header>
 
-        <form action="/student/submit_task" method="POST" id="test-form">
+        <form action="/submit_task" method="POST" id="test-form">
             <input type="hidden" name="task_id" value="{{ task.id }}">
             <input type="hidden" name="tab_switches" id="tab_switches" value="0">
 
@@ -23,8 +23,8 @@
                     <div class="options-list">
                         {% for option in q.options %}
                             <label class="option-label">
-                                <!-- Уникальное имя для каждого вопроса (q_0, q_1, q_2 и т.д.) -->
-                                <input type="radio" name="q_{{ loop.index0 }}" value="{{ option }}" required>
+                                <!-- Используем ID вопроса в имени, чтобы группы никогда не пересекались -->
+                                <input type="radio" name="q_{{ q.id }}" value="{{ option }}" required>
                                 <span>{{ option }}</span>
                             </label>
                         {% endfor %}
@@ -37,7 +37,7 @@
     </div>
 
     <script>
-        // Простой скрипт отслеживания переключения вкладок (защита от списывания)
+        // Защита от списывания (переключение вкладок)
         let tabSwitches = 0;
         document.addEventListener("visibilitychange", function() {
             if (document.hidden) {
