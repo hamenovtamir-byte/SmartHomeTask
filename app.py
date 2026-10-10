@@ -23,22 +23,21 @@ templates = Jinja2Templates(directory="templates")
 
 database.init_db()
 
-# Выбор рабочей модели с запасными вариантами
-MODELS_TO_TRY = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-flash-latest"]
-
 def generate_ai_content(prompt: str):
     if not api_key:
+        print("❌ Ошибка: Переменная GEMINI_API_KEY не задана!")
         return None
-    for model_name in MODELS_TO_TRY:
-        try:
-            print(f"🔄 Пробуем модель: {model_name}")
-            model = genai.GenerativeModel(model_name)
-            response = model.generate_content(prompt)
-            if response and response.text:
-                return response.text
-        except Exception as e:
-            print(f"⚠️ Ошибка с моделью {model_name}: {e}")
-            continue
+        
+    try:
+        print(f"🔄 Отправка запроса в Gemini API...")
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        if response and response.text:
+            print("✅ Ответ от ИИ успешно получен!")
+            return response.text
+    except Exception as e:
+        print(f"⚠️ Подробная ошибка Gemini API: {e}")
+        
     return None
 
 @app.get("/", response_class=HTMLResponse)
@@ -144,7 +143,6 @@ async def generate_task_ai(subject: str = Form(...), topic: str = Form(...), tim
         except Exception as e:
             print(f"Ошибка парсинга JSON от ИИ: {e}")
 
-    # Резервные вопросы (ровно 10 штук), если лимиты API исчерпаны
     if not questions_data or len(questions_data) < 10:
         questions_data = [
             {
@@ -208,7 +206,7 @@ async def solve_task_page(request: Request, task_id: int, user_role: str = Cooki
 
     return templates.TemplateResponse(request=request, name="task_solve.html", context={"task": task, "questions": questions})
 
-@app.post("/student/submit_task")
+@app.post("/submit_task")
 async def submit_task(request: Request, user_id: str = Cookie(None), user_role: str = Cookie(None)):
     if user_role != "student":
         raise HTTPException(status_code=403, detail="Доступ запрещен")
@@ -225,8 +223,9 @@ async def submit_task(request: Request, user_id: str = Cookie(None), user_role: 
     correct_count = 0
     total_questions = len(questions)
 
-    for index, q in enumerate(questions):
-        user_answer = form_data.get(f"q_{index}")
+    for q in questions:
+        # Проверяем ответ по уникальному ID вопроса
+        user_answer = form_data.get(f"q_{q['id']}")
         if user_answer and user_answer.strip() == q["correct_answer"].strip():
             correct_count += 1
 
