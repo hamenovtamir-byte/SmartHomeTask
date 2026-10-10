@@ -102,11 +102,26 @@ async def teacher_panel(request: Request, user_role: str = Cookie(None)):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM tasks ORDER BY id DESC")
     tasks = cursor.fetchall()
+    
     cursor.execute("SELECT username, role FROM users")
     users = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT results.id, users.username, tasks.topic, results.score, results.tab_switches 
+        FROM results 
+        JOIN users ON results.user_id = users.id 
+        JOIN tasks ON results.task_id = tasks.id 
+        ORDER BY results.id DESC
+    """)
+    results = cursor.fetchall()
+    
     conn.close()
 
-    return templates.TemplateResponse(request=request, name="teacher.html", context={"tasks": tasks, "users": users})
+    return templates.TemplateResponse(request=request, name="teacher.html", context={
+        "tasks": tasks, 
+        "users": users,
+        "results": results
+    })
 
 @app.post("/register")
 async def register_user(username: str = Form(...), password: str = Form(...), role: str = Form(...), user_role: str = Cookie(None)):
