@@ -8,65 +8,93 @@
 </head>
 <body>
     <div class="container">
-        <header class="teacher-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2>Панель преподавателя / администратора</h2>
-            <a href="/logout" class="btn-submit" style="background-color: #d9534f; padding: 8px 15px; text-decoration: none;">Выйти</a>
+        <header class="teacher-header">
+            <h2>Панель преподавателя</h2>
+            <a href="/logout" class="btn-logout">Выйти</a>
         </header>
 
-        <section class="generator-section" style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h3>Создать новый тест с помощью ИИ</h3>
+        <!-- Генерация теста с помощью ИИ -->
+        <section class="generator-card">
+            <h3>🤖 Генерация теста с помощью ИИ</h3>
             <form action="/teacher/generate_task_ai" method="POST">
-                <div style="margin-bottom: 10px;">
-                    <label>Предмет:</label><br>
-                    <input type="text" name="subject" required style="width: 100%; padding: 8px;">
+                <div class="form-group">
+                    <label>Предмет:</label>
+                    <input type="text" name="subject" required placeholder="Например: Математика">
                 </div>
-                <div style="margin-bottom: 10px;">
-                    <label>Тема:</label><br>
-                    <input type="text" name="topic" required style="width: 100%; padding: 8px;">
+                <div class="form-group">
+                    <label>Тема:</label>
+                    <input type="text" name="topic" required placeholder="Например: Квадратные уравнения">
                 </div>
-                <div style="margin-bottom: 10px;">
-                    <label>Лимит времени (минуты):</label><br>
-                    <input type="number" name="time_limit" value="15" required style="width: 100%; padding: 8px;">
+                <div class="form-group">
+                    <label>Лимит времени (минуты):</label>
+                    <input type="number" name="time_limit" value="15" required>
                 </div>
                 <button type="submit" class="btn-submit">Сгенерировать тест</button>
             </form>
         </section>
 
-        <section class="results-section" style="margin-bottom: 30px;">
-            <h3>Результаты учеников</h3>
-            <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left;">
-                <thead>
-                    <tr style="background-color: #f2f2f2;">
-                        <th style="padding: 8px;">Ученик</th>
-                        <th style="padding: 8px;">Тема теста</th>
-                        <th style="padding: 8px;">Балл (%)</th>
-                        <th style="padding: 8px;">Переключений вкладок</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for r in results %}
-                        <tr>
-                            <td style="padding: 8px;">{{ r.username }}</td>
-                            <td style="padding: 8px;">{{ r.topic }}</td>
-                            <td style="padding: 8px;">{{ r.score }}%</td>
-                            <td style="padding: 8px;">{{ r.tab_switches }}</td>
+        <!-- Результаты учеников -->
+        <section class="results-card" style="margin-top: 25px;">
+            <h3>📊 Результаты учеников</h3>
+            <div class="table-responsive" style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #ddd; text-align: left;">
+                            <th style="padding: 10px;">Ученик</th>
+                            <th style="padding: 10px;">Тема теста</th>
+                            <th style="padding: 10px;">Балл (%)</th>
+                            <th style="padding: 10px;">Переключений вкладок</th>
                         </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="4" style="padding: 12px; text-align: center;">Пока нет сданных результатов.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for r in results %}
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 10px;">{{ r.username }}</td>
+                                <td style="padding: 10px;">{{ r.topic }}</td>
+                                <td style="padding: 10px;"><strong>{{ r.score }}%</strong></td>
+                                <td style="padding: 10px; color: {% if r.tab_switches > 0 %}red{% else %}green{% endif %};">{{ r.tab_switches }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="4" style="padding: 15px; text-align: center; color: #777;">Пока нет сданных результатов.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </section>
 
-        <section class="tasks-list">
-            <h3>Список созданных тестов</h3>
+        <!-- Регистрация пользователей (возвращена на место!) -->
+        <section class="register-card" style="margin-top: 25px;">
+            <h3>Регистрация нового пользователя</h3>
+            <form action="/register" method="POST">
+                <div class="form-group">
+                    <label>Имя пользователя:</label>
+                    <input type="text" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль:</label>
+                    <input type="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label>Роль:</label>
+                    <select name="role" style="width: 100%; padding: 8px; margin-top: 5px;">
+                        <option value="student">Ученик</option>
+                        <option value="teacher">Преподаватель</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-submit" style="margin-top: 10px;">Зарегистрировать</button>
+            </form>
+        </section>
+
+        <!-- Список созданных тестов -->
+        <section class="tasks-list" style="margin-top: 25px;">
+            <h3>Список тестов</h3>
             <ul>
                 {% for task in tasks %}
-                    <li style="margin-bottom: 8px;"><strong>{{ task.subject }}</strong> — {{ task.topic }} (Время: {{ task.time_limit }} мин.)</li>
+                    <li><strong>{{ task.subject }}</strong>: {{ task.topic }} ({{ task.time_limit }} мин.)</li>
                 {% else %}
-                    <p>Тесты еще не созданы.</p>
+                    <p>Тестов пока нет.</p>
                 {% endfor %}
             </ul>
         </section>
