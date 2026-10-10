@@ -30,6 +30,7 @@ def generate_ai_content(prompt: str):
         
     try:
         print(f"🔄 Отправка запроса в Gemini API...")
+        genai.configure(api_key=api_key)
         model = genai.GenerativeModel("gemini-1.5-flash")
         response = model.generate_content(prompt)
         if response and response.text:
@@ -206,7 +207,7 @@ async def solve_task_page(request: Request, task_id: int, user_role: str = Cooki
 
     return templates.TemplateResponse(request=request, name="task_solve.html", context={"task": task, "questions": questions})
 
-@app.post("/submit_task")
+@app.post("/student/submit_task")
 async def submit_task(request: Request, user_id: str = Cookie(None), user_role: str = Cookie(None)):
     if user_role != "student":
         raise HTTPException(status_code=403, detail="Доступ запрещен")
@@ -224,7 +225,6 @@ async def submit_task(request: Request, user_id: str = Cookie(None), user_role: 
     total_questions = len(questions)
 
     for q in questions:
-        # Проверяем ответ по уникальному ID вопроса
         user_answer = form_data.get(f"q_{q['id']}")
         if user_answer and user_answer.strip() == q["correct_answer"].strip():
             correct_count += 1
