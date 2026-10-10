@@ -162,7 +162,7 @@ async def generate_task_ai(subject: str = Form(...), topic: str = Form(...), tim
 
     conn = database.get_db()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO tasks (subject, topic, time_limit) VALUES (?, ?, ?)", (subject, topic, time_limit))
+   cursor.execute("INSERT INTO tasks (subject, topic, time_limit, question_type) VALUES (?, ?, ?, ?)", (subject, topic, time_limit, question_type))
     task_id = cursor.lastrowid
 
     for q in questions_data:
