@@ -13,7 +13,7 @@
             <div class="timer">Осталось времени: <span id="timer-display">{{ task.time_limit }}:00</span></div>
         </header>
 
-        <form action="/submit_task" method="POST" id="test-form">
+        <form action="/student/submit_task" method="POST" id="test-form">
             <input type="hidden" name="task_id" value="{{ task.id }}">
             <input type="hidden" name="tab_switches" id="tab_switches" value="0">
 
@@ -23,7 +23,6 @@
                     <div class="options-list">
                         {% for option in q.options %}
                             <label class="option-label">
-                                <!-- Используем ID вопроса в имени, чтобы группы никогда не пересекались -->
                                 <input type="radio" name="q_{{ q.id }}" value="{{ option }}" required>
                                 <span>{{ option }}</span>
                             </label>
@@ -37,7 +36,6 @@
     </div>
 
     <script>
-        // Защита от списывания (переключение вкладок)
         let tabSwitches = 0;
         document.addEventListener("visibilitychange", function() {
             if (document.hidden) {
@@ -46,7 +44,6 @@
             }
         });
 
-        // Таймер обратного отсчета
         let timeLeft = {{ task.time_limit }} * 60;
         const timerDisplay = document.getElementById("timer-display");
         
