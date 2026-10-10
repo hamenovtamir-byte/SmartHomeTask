@@ -14,7 +14,7 @@ def init_db():
         )
     """)
     
-    # Таблица заданий (исправлены обязательные поля под логику ИИ-генерации)
+    # Таблица заданий
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,6 +53,6 @@ def init_db():
     conn.close()
 
 def get_db():
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect("database.db", timeout=10.0)
     conn.row_factory = sqlite3.Row
     return conn
