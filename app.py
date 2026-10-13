@@ -29,7 +29,7 @@ def generate_ai_content(prompt: str):
         print("❌ КРИТИЧЕСКАЯ ОШИБКА: Ключ GEMINI_API_KEY не задан!")
         return None
         
-    # Используем актуальные модели с учетом последних обновлений API
+    # Актуальный список моделей с правильным приоритетом
     models_to_test = [
         "gemini-3.8-flash",
         "gemini-2.5-flash",
