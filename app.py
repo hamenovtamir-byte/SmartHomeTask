@@ -26,24 +26,20 @@ database.init_db()
 
 def generate_ai_content(prompt: str):
     if not api_key:
-        print("❌ Ошибка: Переменная GEMINI_API_KEY не задана!")
+        print("❌ КРИТИЧЕСКАЯ ОШИБКА: Ключ GEMINI_API_KEY не задан!")
         return None
         
+    # Актуальные имена моделей для текущей версии библиотеки
     models_to_test = [
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
         "gemini-1.5-flash",
-        "gemini-1.5-flash-latest",
-        "gemini-1.5-pro",
-        "gemini-1.5-pro-latest",
-        "gemini-pro",
-        "models/gemini-1.5-flash",
-        "models/gemini-1.5-pro",
-        "models/gemini-pro"
+        "gemini-1.5-pro"
     ]
     
     for model_name in models_to_test:
         try:
             print(f"🔄 Пробуем модель: {model_name}...")
-            genai.configure(api_key=api_key)
             model = genai.GenerativeModel(model_name)
             response = model.generate_content(prompt)
             if response and response.text:
@@ -53,6 +49,7 @@ def generate_ai_content(prompt: str):
             print(f"⚠️ Ошибка с моделью {model_name}: {e}")
             continue
             
+    print("❌ ВСЕ модели вернули ошибку.")
     return None
 
 @app.get("/", response_class=HTMLResponse)
@@ -193,7 +190,7 @@ async def generate_task_ai(subject: str = Form(...), topic: str = Form(...), tim
         options = q["options"]
         correct = q["answer"]
         
-        # Рандомизируем порядок вариантов ответа
+        # Перемешиваем варианты ответов случайным образом
         random.shuffle(options)
         
         options_json = json.dumps(options, ensure_ascii=False)
@@ -212,6 +209,7 @@ async def student_panel(request: Request, user_id: str = Cookie(None), user_role
     conn = database.get_db()
     cursor = conn.cursor()
     
+    # Исключаем тесты, которые этот ученик уже сдал
     cursor.execute("""
         SELECT * FROM tasks 
         WHERE id NOT IN (SELECT task_id FROM results WHERE user_id = ?) 
