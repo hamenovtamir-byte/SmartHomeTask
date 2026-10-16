@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Проверка и редактирование теста</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Проверка теста от ИИ</h1>
+        <p>Отредактируйте вопросы, варианты или правильный ответ при необходимости, затем нажмите «Опубликовать тест».</p>
+
+        <form action="/teacher/publish/{{ task.id }}" method="POST">
+            <div class="card" style="margin-bottom: 20px; padding: 15px;">
+                <label><b>Предмет:</b></label>
+                <input type="text" name="subject" value="{{ task.subject }}" required style="width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px;">
+                
+                <label><b>Тема теста:</b></label>
+                <input type="text" name="topic" value="{{ task.topic }}" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+
+            {% for q in questions %}
+            <div class="card" style="margin-bottom: 20px; padding: 15px;">
+                <h3>Вопрос {{ loop.index }}</h3>
+                <input type="text" name="question_{{ q.id }}" value="{{ q.question }}" required style="width: 100%; padding: 8px; margin-bottom: 10px; font-weight: bold;">
+
+                <p style="margin: 5px 0;">Варианты ответа:</p>
+                {% for opt in q.options %}
+                <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                    <span style="width: 30px;">{{ loop.index }}.</span>
+                    <input type="text" name="opt_{{ q.id }}_{{ loop.index0 }}" value="{{ opt }}" required style="flex: 1; padding: 5px;">
+                </div>
+                {% endfor %}
+
+                <label style="display: block; margin-top: 10px;"><b>Правильный ответ (должен точно совпадать с одним из вариантов выше):</b></label>
+                <input type="text" name="correct_{{ q.id }}" value="{{ q.correct_answer }}" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            {% endfor %}
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button type="submit" class="btn" style="padding: 12px 25px; font-size: 16px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">🚀 Опубликовать тест</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
