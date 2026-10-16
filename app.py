@@ -29,7 +29,6 @@ def generate_ai_content(prompt: str):
         print("❌ КРИТИЧЕСКАЯ ОШИБКА: Ключ GEMINI_API_KEY не задан!")
         return None
         
-    # Актуальный список моделей с правильным приоритетом
     models_to_test = [
         "gemini-3.8-flash",
         "gemini-2.5-flash",
@@ -182,19 +181,90 @@ async def generate_task_ai(subject: str = Form(...), topic: str = Form(...), tim
 
     conn = database.get_db()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO tasks (subject, topic, time_limit, question_type) VALUES (?, ?, ?, ?)", (subject, topic, time_limit, question_type))
+    # Создаем как черновик (is_published = 0)
+    cursor.execute("INSERT INTO tasks (subject, topic, time_limit, question_type, is_published) VALUES (?, ?, ?, ?, 0)", 
+                   (subject, topic, time_limit, question_type))
     task_id = cursor.lastrowid
 
     for q in questions_data[:10]:
         options = q["options"]
         correct = q["answer"]
-        
-        # Перемешиваем варианты ответов случайным образом
         random.shuffle(options)
-        
         options_json = json.dumps(options, ensure_ascii=False)
         cursor.execute("INSERT INTO questions (task_id, question_text, options, correct_answer) VALUES (?, ?, ?, ?)",
                        (task_id, q["question"], options_json, correct))
+    conn.commit()
+    conn.close()
+
+    # Перенаправляем на предпросмотр
+    return RedirectResponse(url=f"/teacher/preview/{task_id}", status_code=status.HTTP_303_SEE_OTHER)
+
+@app.get("/teacher/preview/{task_id}", response_class=HTMLResponse)
+async def preview_task(request: Request, task_id: int, user_role: str = Cookie(None)):
+    if user_role not in ["admin", "teacher"]:
+        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
+
+    conn = database.get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+    task = cursor.fetchone()
+
+    cursor.execute("SELECT * FROM questions WHERE task_id = ?", (task_id,))
+    questions_raw = cursor.fetchall()
+    conn.close()
+
+    if not task:
+        raise HTTPException(status_code=404, detail="Тест не найден")
+
+    questions = []
+    for q in questions_raw:
+        questions.append({
+            "id": q["id"],
+            "question": q["question_text"],
+            "options": json.loads(q["options"]),
+            "correct_answer": q["correct_answer"]
+        })
+
+    return templates.TemplateResponse(request=request, name="task_preview.html", context={"task": task, "questions": questions})
+
+@app.post("/teacher/publish/{task_id}")
+async def publish_task(request: Request, task_id: int, user_role: str = Cookie(None)):
+    if user_role not in ["admin", "teacher"]:
+        raise HTTPException(status_code=403, detail="Недостаточно прав")
+
+    form_data = await request.form()
+    
+    conn = database.get_db()
+    cursor = conn.cursor()
+
+    subject = form_data.get("subject")
+    topic = form_data.get("topic")
+    
+    # Публикуем тест (is_published = 1)
+    cursor.execute("UPDATE tasks SET subject = ?, topic = ?, is_published = 1 WHERE id = ?", (subject, topic, task_id))
+
+    cursor.execute("SELECT id FROM questions WHERE task_id = ?", (task_id,))
+    question_rows = cursor.fetchall()
+
+    for row in question_rows:
+        q_id = row["id"]
+        q_text = form_data.get(f"question_{q_id}")
+        correct_ans = form_data.get(f"correct_{q_id}")
+        
+        opt1 = form_data.get(f"opt_{q_id}_0")
+        opt2 = form_data.get(f"opt_{q_id}_1")
+        opt3 = form_data.get(f"opt_{q_id}_2")
+        opt4 = form_data.get(f"opt_{q_id}_3")
+        
+        options_list = [opt1, opt2, opt3, opt4]
+        options_json = json.dumps(options_list, ensure_ascii=False)
+
+        cursor.execute("""
+            UPDATE questions 
+            SET question_text = ?, options = ?, correct_answer = ? 
+            WHERE id = ?
+        """, (q_text, options_json, correct_ans, q_id))
+
     conn.commit()
     conn.close()
 
@@ -208,10 +278,10 @@ async def student_panel(request: Request, user_id: str = Cookie(None), user_role
     conn = database.get_db()
     cursor = conn.cursor()
     
-    # Исключаем тесты, которые этот ученик уже сдал
+    # Ученики видят только опубликованные тесты, которые еще не сдавали
     cursor.execute("""
         SELECT * FROM tasks 
-        WHERE id NOT IN (SELECT task_id FROM results WHERE user_id = ?) 
+        WHERE is_published = 1 AND id NOT IN (SELECT task_id FROM results WHERE user_id = ?) 
         ORDER BY id DESC
     """, (user_id,))
     tasks = cursor.fetchall()
@@ -239,7 +309,7 @@ async def solve_task_page(request: Request, task_id: int, user_role: str = Cooki
 
     conn = database.get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+    cursor.execute("SELECT * FROM tasks WHERE id = ? AND is_published = 1", (task_id,))
     task = cursor.fetchone()
 
     cursor.execute("SELECT * FROM questions WHERE task_id = ?", (task_id,))
