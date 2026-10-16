@@ -13,26 +13,21 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            role TEXT NOT NULL
+            username TEXT UNIQUE,
+            password TEXT,
+            role TEXT
         )
     """)
     
-    # Создаем администратора по умолчанию (логин: admin, пароль: admin123)
-    cursor.execute("""
-        INSERT OR IGNORE INTO users (username, password, role) 
-        VALUES ('admin', 'admin123', 'admin')
-    """)
-    
-    # Таблица тестов (заданий)
+    # Таблица тестов (добавлен флаг is_published: 0 - черновик, 1 - опубликован)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            subject TEXT NOT NULL,
-            topic TEXT NOT NULL,
-            time_limit INTEGER NOT NULL,
-            question_type TEXT NOT NULL
+            subject TEXT,
+            topic TEXT,
+            time_limit INTEGER,
+            question_type TEXT,
+            is_published INTEGER DEFAULT 1
         )
     """)
     
@@ -41,14 +36,14 @@ def init_db():
         CREATE TABLE IF NOT EXISTS questions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             task_id INTEGER,
-            question_text TEXT NOT NULL,
-            options TEXT NOT NULL,
-            correct_answer TEXT NOT NULL,
+            question_text TEXT,
+            options TEXT,
+            correct_answer TEXT,
             FOREIGN KEY (task_id) REFERENCES tasks (id)
         )
     """)
     
-    # Таблица результатов прохождения тестов учениками
+    # Таблица результатов
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS results (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,5 +56,11 @@ def init_db():
         )
     """)
     
+    # Создаем админа по умолчанию, если его нет
+    cursor.execute("SELECT * FROM users WHERE username = 'admin'")
+    if not cursor.fetchone():
+        cursor.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", 
+                       ("admin", "admin123", "admin"))
+                       
     conn.commit()
     conn.close()
