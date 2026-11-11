@@ -32,8 +32,7 @@ def generate_ai_content(prompt: str):
 
   try:
     print("🔄 Запрос к модели Gemini...")
-    # Используем суффикс -latest, чтобы библиотека корректно нашла модель
-    model = genai.GenerativeModel("gemini-1.5-flash-latest")
+    model = genai.GenerativeModel("gemini-pro")
     response = model.generate_content(prompt)
     if response and response.text:
       print("✅ Успешно получено от ИИ!")
@@ -354,6 +353,7 @@ async def student_panel(
 
   cursor.execute(
       """
+        SELECT results.score, results.tab_switches, tasks.subject, tasks.topic 
         SELECT results.score, results.tab_switches, tasks.subject, tasks.topic 
         FROM results 
         JOIN tasks ON results.task_id = tasks.id 
