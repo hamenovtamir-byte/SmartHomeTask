@@ -3,5 +3,5 @@ uvicorn
 jinja2
 pydantic
 python-dotenv
-google-generativeai
+google-genai
 python-multipart
