@@ -104,11 +104,10 @@
 
     </div>
 
-    <!-- Индикатор загрузки для генерации ИИ -->
+    <!-- Индикатор загрузки без блокировки отправки -->
     <script>
         document.getElementById('aiGeneratorForm').addEventListener('submit', function() {
             const btn = this.querySelector('.btn-submit');
-            btn.disabled = true;
             btn.style.backgroundColor = '#9ca3af';
             btn.textContent = '⏳ ИИ генерирует тест, подождите...';
         });
