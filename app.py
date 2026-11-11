@@ -30,24 +30,15 @@ def generate_ai_content(prompt: str):
     print("❌ КРИТИЧЕСКАЯ ОШИБКА: Ключ GEMINI_API_KEY не задан!")
     return None
 
-  # Используем только реальную и самую быструю модель flash без лишних переборов
-  model_name = "gemini-1.5-flash"
-
   try:
-    print(f"🔄 Запрос к модели: {model_name}...")
-    model = genai.GenerativeModel(
-        model_name=model_name,
-        generation_config={
-            "temperature": 0.3,  # Быстрый и четкий ответ без долгих раздумий
-            "max_output_tokens": 1000,  # Ограничение объема для максимальной скорости
-        },
-    )
+    print("🔄 Запрос к модели Gemini...")
+    model = genai.GenerativeModel("gemini-1.5-flash")
     response = model.generate_content(prompt)
     if response and response.text:
-      print(f"✅ Успешно получено от модели {model_name}!")
+      print("✅ Успешно получено от ИИ!")
       return response.text
   except Exception as e:
-    print(f"⚠️ Ошибка с моделью {model_name}: {e}")
+    print(f"⚠️ Ошибка при обращении к Gemini API: {e}")
 
   print("❌ Не удалось получить ответ от ИИ.")
   return None
