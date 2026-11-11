@@ -17,7 +17,7 @@
         <!-- Генерация теста с помощью ИИ -->
         <section class="generator-card" style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e9ecef;">
             <h3 style="margin-top: 0; color: #2c3e50; margin-bottom: 15px;">🤖 Генерация теста с помощью ИИ</h3>
-            <form action="/teacher/generate_task_ai" method="POST">
+            <form action="/teacher/generate_task_ai" method="POST" id="aiGeneratorForm">
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">Предмет:</label>
                     <input type="text" name="subject" required placeholder="Например: Физика" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;">
@@ -103,5 +103,15 @@
         </section>
 
     </div>
+
+    <!-- Индикатор загрузки для генерации ИИ -->
+    <script>
+        document.getElementById('aiGeneratorForm').addEventListener('submit', function() {
+            const btn = this.querySelector('.btn-submit');
+            btn.disabled = true;
+            btn.style.backgroundColor = '#9ca3af';
+            btn.textContent = '⏳ ИИ генерирует тест, подождите...';
+        });
+    </script>
 </body>
 </html>
