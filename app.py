@@ -32,7 +32,8 @@ def generate_ai_content(prompt: str):
 
   try:
     print("🔄 Запрос к модели Gemini...")
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    # Используем суффикс -latest, чтобы библиотека корректно нашла модель
+    model = genai.GenerativeModel("gemini-1.5-flash-latest")
     response = model.generate_content(prompt)
     if response and response.text:
       print("✅ Успешно получено от ИИ!")
